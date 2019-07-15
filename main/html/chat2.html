@@ -24,13 +24,65 @@
       border-bottom: none;
     }
 
-    textarea {
+    #text1,
+    #text2 {
       font-size: 1em;
       height: 30%;
       width: 100%;
       border-radius: 10px;
       border: solid 1.5px rgb(125, 138, 173);
       outline: none;
+    }
+
+    #userName {
+      font-size: 1.5em;
+      width: 30%;
+      border-radius: 10px;
+      border: solid 1.5px rgb(125, 138, 173);
+      outline: none;
+    }
+
+    .Area {
+      margin-left: 90%;
+      width: 60px;
+    }
+
+    .Area input[type="checkbox"] {
+      display: none;
+    }
+
+    .Area label {
+      display: block;
+      box-sizing: border-box;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 3px;
+      height: 60px;
+      font-size: 18px;
+      line-height: 60px;
+      font-weight: bold;
+      background: #eee;
+      box-shadow: 3px 3px 6px #888;
+      transition: .3s;
+    }
+
+    .Area label span:after {
+      content: "OFF";
+      color: #aaa;
+    }
+
+    .Area #check:checked+label {
+      background: #78bd78;
+      box-shadow: none;
+    }
+
+    .Area #check:checked+label span:after {
+      content: "ON";
+      color: #fff;
+    }
+
+    ::placeholder {
+      color: rgb(161, 161, 179);
     }
 
     /*
@@ -47,12 +99,21 @@
 </head>
 
 <body>
-  <div id="chatbox" class="center">
-    <textarea></textarea><br>
-  </div><br>
-  <textarea id="name"></textarea><br>
-  <textarea id="text"></textarea><br>
+  <input type="text" id="userName" placeholder="user name"><br>
+  <textarea id="text1"></textarea><br><br>
+
+  <div class="Area" id="makeImg">
+    <input type="checkbox" id="check">
+    <label for="check">
+      <span></span>
+    </label>
+  </div>
+
+  <textarea id="text2"></textarea><br>
   <button id="apply">apply</button>
+
+
+
 
 
 
@@ -61,11 +122,11 @@
 
     $(function () {
       var socket = null;
-      var $textarea = $("#chatbox textarea");
-
-      var $text = $("#text");
+      var $userName = $("#userName");
+      var $text1 = $("#text1");
+      var $check = $("#check");
+      var $text2 = $("#text2");
       var $apply = $("#apply");
-      var $name = $("#name");
 
 
       if (!window["WebSocket"]) {
@@ -82,37 +143,72 @@
           var msg = JSON.parse(e.data);
 
           if (msg.type == "1") {
-            var name = "#" + msg.name;
-            var startIndex = $text.val().indexOf(name) + name.length;
-            var lastIndex = $text.val().indexOf("#", startIndex);
-            var val = $text.val().slice(0, startIndex) + msg.text + $text.val().slice(lastIndex);
-            $text.val(val);
+            var userName = "#" + msg.userName;
+            var startIndex = $text2.val().indexOf(userName) + userName.length;
+            var lastIndex = $text2.val().indexOf("#", startIndex);
+            var val = $text2.val().slice(0, startIndex) + msg.text + $text2.val().slice(lastIndex);
+            $text2.val(val);
           } else if (msg.type == "2") {
-            $text.val(msg.text);
+            $text2.val(msg.text);
           }
+          /*
+          else if (msg.type == "3") {
+            if(msg.userName != $userName.val()) {
+              $check.trigger("click");
+            }
+          }
+          */
         }
       }
 
-      //送信
-      $textarea.on("input", function (e) {
+      //text2をロック
+      $text2.attr("readonly", true);
+
+      //applyボタンをロック
+      $apply.attr("disabled", true);
+
+      //text1の入力を送信
+      $text1.on("input", function (e) {
         var obj = {
           type: "1",
-          name: $name.val(),
-          text: $textarea.val()
+          check: "false",
+          userName: $userName.val(),
+          text: $text1.val()
         }
         socket.send(JSON.stringify(obj));
       })
 
+      //ロック、アンロックボタン
+      $check.on("click", function () {
+        var flag = $check.prop("checked");
+        $text2.attr('readonly', !flag);
+        $apply.attr("disabled", !flag);
+
+        /*
+        var obj = {
+          type: "3",
+          check: flag,
+          userName: $userName.val(),
+          text: "false"
+        }
+        socket.send(JSON.stringify(obj));
+        */
+      })
+
+
+      //applyボタンクリック時
       $apply.on("click", function () {
         var obj = {
           type: "2",
-          name: $name.val(),
-          text: $text.val()
+          check: "false",
+          userName: $userName.val(),
+          text: $text2.val()
         }
         socket.send(JSON.stringify(obj));
       })
 
-    });
+
+    })
   </script>
 </body>
 
