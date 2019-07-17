@@ -113,13 +113,9 @@
   <button id="apply">apply</button>
 
 
-
-
-
-
+  <!--      javascript     -->
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script>
-
     $(function () {
       var socket = null;
       var $userName = $("#userName");
@@ -150,15 +146,18 @@
             $text2.val(val);
           } else if (msg.type == "2") {
             $text2.val(msg.text);
-          }
-          /*
-          else if (msg.type == "3") {
-            if(msg.userName != $userName.val()) {
-              $check.trigger("click");
+          } else if (msg.type == "3") {
+            if (msg.userName != $userName.val()) {
+              console.log(msg.check);
+              if (msg.check == true) {
+                $check.attr('disabled', msg.check);
+              } else if (msg.check == false) {
+                $check.attr('disabled', msg.check);
+              }
             }
           }
-          */
         }
+
       }
 
       //text2をロック
@@ -178,13 +177,12 @@
         socket.send(JSON.stringify(obj));
       })
 
-      //ロック、アンロックボタン
+      //test2, applyのロック、アンロック
       $check.on("click", function () {
         var flag = $check.prop("checked");
         $text2.attr('readonly', !flag);
         $apply.attr("disabled", !flag);
 
-        /*
         var obj = {
           type: "3",
           check: flag,
@@ -192,7 +190,8 @@
           text: "false"
         }
         socket.send(JSON.stringify(obj));
-        */
+
+
       })
 
 
